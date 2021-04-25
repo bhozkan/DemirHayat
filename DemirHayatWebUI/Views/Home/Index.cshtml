@@ -1,0 +1,147 @@
+﻿@{
+    ViewBag.Title = "Index";
+}
+<style>
+    .custom-search-form {
+        margin-top: 5px;
+    }
+
+    .loader {
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #000000;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite; /* Safari */
+        animation: spin 2s linear infinite;
+    }
+
+    /* Safari */
+    @@-webkit-keyframes spin {
+        0% {
+            -webkit-transform: rotate(0deg);
+        }
+
+        100% {
+            -webkit-transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+<div id="Search" class="container">
+    <div class="row" style="padding-top: 20px; padding-bottom:20px">
+        <div class="col-lg-3">
+            <label>Film Ara</label>
+            <div class="input-group custom-search-form">
+                <input id="SearchText" type="text" class="form-control" style="display:block">
+                <span class="input-group-btn">
+                    <button id="SearcButton" class="btn btn-default" type="button">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <table id="MovieTable" class="table table-bordered">
+            <thead style="background-color: black; color: white">
+                <tr>
+                    <th style="width: 30%">Afiş</th>
+                    <th style="width: 20%">Ad</th>
+                    <th style="width: 15%">Yıl</th>
+                    <th style="width: 15%">IMDB ID</th>
+                    <th style="width: 20%">Tip</th>
+                </tr>
+            </thead>
+            <tbody id="MovieTableBody">
+            </tbody>
+        </table>
+        <div id="EmtyResult" class="row col-md-offset-4">
+            <label style="color: red; text-align:center">Aradığınız kritere uygun film bulunamadı</label>
+        </div>
+    </div>
+</div>
+
+<div id="Loader" class="container" style="padding-top:50px">
+    <div class="row col-md-offset-5">
+        <div class="loader"></div>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function () {
+        console.log("2");
+        $("#Loader").css("display", "none");
+        $("#EmtyResult").css("display", "none");
+    });
+
+    $("#SearcButton").click(function () {
+        $("#MovieTableBody").html("");
+        $("#EmtyResult").css("display", "none");
+
+        var text = $("#SearchText").val();
+        if (text == "") {
+            alert("Lütfen aramak istediğiniz metni giriniz");
+            return false;
+        }
+        else {
+            $.ajax({
+                type: "GET",
+                url: 'http://www.omdbapi.com/?apikey=f5011fd8&s=' + text,
+                cache: false,
+                beforeSend: function () {
+                    $("#Loader").css("display", "block");
+                    $("#Search").css("display", "none");
+                    
+                },
+                success: function (data) {
+                    var tbody = "";
+                    var FilmList = data.Search;
+                    if (data.Response == "True") {
+                        $.each(FilmList, function (i, member) {
+                            var trow = "";
+                            trow += "<tr>";
+                            trow += "<td><img src='" + FilmList[i].Poster + "'></td>";
+                            trow += "<td>" + FilmList[i].Title + "</td>";
+                            trow += "<td>" + FilmList[i].Year + "</td>";
+                            trow += "<td>" + FilmList[i].imdbID + "</td>";
+                            trow += "<td>" + FilmList[i].Type + "</td>";
+                            trow += "</td>";
+                            tbody += trow;
+                        });
+
+                        $("#MovieTableBody").html(tbody);
+                    }
+                    else {
+                        $("#EmtyResult").css("display", "block");
+                    }
+                },
+                failure: function (response) {
+                    alert("response" + response.d);
+                },
+                complete: function () {
+                    $("#Loader").css("display", "none");
+                    $("#Search").css("display", "block");
+                }
+            });
+        }
+
+    });
+
+    function ResponseOperations(data) {
+
+    }
+</script>
